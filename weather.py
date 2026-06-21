@@ -1,5 +1,7 @@
 import requests
 from datetime import datetime
+from zoneinfo import ZoneInfo
+thai_time = datetime.now(ZoneInfo("Asia/Bangkok"))
 
 # =========================
 # CONFIG
@@ -41,8 +43,8 @@ umbrella_list = []
 
 message = (
     "🇹🇭 **รายงานอากาศประเทศไทย**\n"
-    f"{datetime.now().strftime('%d/%m/%Y')} | "
-    f"{datetime.now().strftime('%H:%M')} น.\n\n"
+    f"{datetime.now(ZoneInfo('Asia/Bangkok')).strftime('%d/%m/%Y')} | "
+    f"{datetime.now(ZoneInfo('Asia/Bangkok')).strftime('%H:%M')} น.\n\n"
 )
 
 for region, cities in REGIONS.items():
