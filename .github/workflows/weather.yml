@@ -1,4 +1,4 @@
-name: Weather Bot
+name: Weather Bot PRO
 
 on:
   schedule:
@@ -18,10 +18,10 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install Requests
+      - name: Install requests
         run: pip install requests
 
-      - name: Run Weather Bot
+      - name: Run Bot
         env:
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
