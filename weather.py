@@ -9,18 +9,6 @@ thai_time = datetime.now(ZoneInfo("Asia/Bangkok"))
 
 API_KEY = "3e0a7d09d6908c0092ec0a188a91de31"
 WEBHOOK_URL = "https://discord.com/api/webhooks/1517002604025217049/wxBMAicuP1W6pO2Tp3hOy05nxQZAXVIZREWJRBFPYsdmTzQf8rw3Yku0LWZgJ0HTRuDN"
-
-import requests
-from datetime import datetime
-from zoneinfo import ZoneInfo
-
-# =========================
-# CONFIG
-# =========================
-
-API_KEY = "YOUR_API_KEY"
-WEBHOOK_URL = "YOUR_WEBHOOK_URL"
-
 MESSAGE_ID = "1517770437281448087"
 
 REGIONS = {
