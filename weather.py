@@ -11,6 +11,8 @@ API_KEY = "3e0a7d09d6908c0092ec0a188a91de31"
 WEBHOOK_URL = "https://discord.com/api/webhooks/1517002604025217049/wxBMAicuP1W6pO2Tp3hOy05nxQZAXVIZREWJRBFPYsdmTzQf8rw3Yku0LWZgJ0HTRuDN"
 thai_time = datetime.now(ZoneInfo("Asia/Bangkok"))
 
+thai_time = datetime.now(ZoneInfo("Asia/Bangkok"))
+
 REGIONS = {
     "ภาคเหนือ": {"เชียงใหม่": "Chiang Mai", "พิษณุโลก": "Phitsanulok"},
     "ภาคอีสาน": {"ขอนแก่น": "Khon Kaen", "นครราชสีมา": "Nakhon Ratchasima"},
@@ -34,11 +36,12 @@ highest_pm25_city = ""
 highest_rain = -1
 highest_rain_city = ""
 umbrella_list = []
+
 fields = []
 
 for region, cities in REGIONS.items():
 
-    text = []
+    block = []
 
     for name, city in cities.items():
 
@@ -46,6 +49,7 @@ for region, cities in REGIONS.items():
             "https://api.openweathermap.org/data/2.5/weather",
             {"q": city, "appid": API_KEY, "units": "metric"}
         )
+
         if not weather:
             continue
 
@@ -91,11 +95,11 @@ for region, cities in REGIONS.items():
         if rain >= 70:
             umbrella_list.append(name)
 
-        text.append(f"**{name}**\n🌧️ {rain}% 🌡️ {feels}°C 😷 {pm25}")
+        block.append(f"**{name}**\n🌧️ {rain}% 🌡️ {feels}°C 😷 {pm25}")
 
     fields.append({
         "name": f"📍 {region}",
-        "value": "\n\n".join(text),
+        "value": "\n\n".join(block),
         "inline": False
     })
 
@@ -126,13 +130,13 @@ fields.append({
 })
 
 embed = {
-    "title": "🇹🇭 Weather Dashboard PRO",
+    "title": "🇹🇭 Weather Dashboard PRO (Fresh Install)",
     "description": f"🕒 {thai_time:%d/%m/%Y %H:%M}",
     "color": color(),
     "fields": fields,
-    "footer": {"text": "Weather Bot PRO"}
+    "footer": {"text": "Clean PRO Weather Bot"}
 }
 
 requests.post(WEBHOOK_URL, json={"embeds": [embed]}, timeout=30)
 
-print("✅ DONE")
+print("✅ CLEAN PRO INSTALL DONE")
