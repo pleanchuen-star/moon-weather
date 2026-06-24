@@ -2,7 +2,7 @@ name: Weather Bot
 
 on:
   schedule:
-    - cron: '0 21,1,5,9,13,17 * * *'
+    - cron: '0 1,5,9,13,17,21 * * *'
   workflow_dispatch:
 
 jobs:
