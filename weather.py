@@ -48,7 +48,8 @@ def fetch_weather(city):
             params={
                 "q": city,
                 "appid": API_KEY,
-                "units": "metric"
+                "units": "metric",
+                "lang": "th"
             },
             timeout=10
         )
@@ -89,7 +90,7 @@ def fetch_forecast(city):
         return None
 
 # =========================
-# EMBED
+# EMBED BUILDER
 # =========================
 
 def build_embed():
@@ -120,12 +121,10 @@ def build_embed():
             air = fetch_air_pollution(lat, lon)
 
             if air and "list" in air:
-                pm25 = round(
-                    air["list"][0]["components"]["pm2_5"], 1
-                )
+                pm25 = round(air["list"][0]["components"]["pm2_5"], 1)
                 aqi = air["list"][0]["main"]["aqi"]
 
-            # Rain Forecast
+            # Rain forecast
             rain = "ไม่มีฝน"
 
             forecast = fetch_forecast(city)
@@ -136,7 +135,7 @@ def build_embed():
                         rain = "มีโอกาสฝน"
                         break
 
-            # Weather Icon
+            # Icon
             if temp >= 35:
                 icon = "🔥"
             elif temp >= 30:
@@ -167,7 +166,7 @@ def build_embed():
     }
 
 # =========================
-# DISCORD MESSAGE CONTROL
+# DISCORD
 # =========================
 
 def load_msg_id():
@@ -186,12 +185,10 @@ def save_msg_id(mid):
 def send_or_edit(embed, msg_id):
 
     if msg_id:
-
         requests.patch(
             WEBHOOK_URL + f"/messages/{msg_id}",
             json={"embeds": [embed]}
         )
-
         return msg_id
 
     r = requests.post(
@@ -208,7 +205,6 @@ def send_or_edit(embed, msg_id):
 while True:
 
     try:
-
         embed = build_embed()
 
         msg_id = load_msg_id()
@@ -217,12 +213,9 @@ while True:
 
         save_msg_id(new_id)
 
-        print(
-            f"[{datetime.now(thai_tz)}] Updated: {new_id}"
-        )
+        print(f"[{datetime.now(thai_tz)}] Updated: {new_id}")
 
     except Exception as e:
         print("ERROR:", e)
 
     time.sleep(300)
-```
