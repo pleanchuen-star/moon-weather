@@ -19,7 +19,6 @@ thai_tz = ZoneInfo("Asia/Bangkok")
 REGIONS = {
     "# ภาคเหนือ": {
         "เชียงใหม่": "Chiang Mai",
-        "เชียงราย": "Chiang Rai",
         "พิษณุโลก": "Phitsanulok",
     },
     "# ภาคอีสาน": {
