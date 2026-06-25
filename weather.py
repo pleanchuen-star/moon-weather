@@ -12,38 +12,34 @@ API_KEY = "3e0a7d09d6908c0092ec0a188a91de31"
 WEBHOOK_URL = "https://discord.com/api/webhooks/1517002604025217049/wxBMAicuP1W6pO2Tp3hOy05nxQZAXVIZREWJRBFPYsdmTzQf8rw3Yku0LWZgJ0HTRuDN"
 thai_tz = ZoneInfo("Asia/Bangkok")
 
-
 # =========================
 # REGIONS
 # =========================
 
 REGIONS = {
-    "🌏 ภาคเหนือ": {
+    "# ภาคเหนือ": {
         "เชียงใหม่": "Chiang Mai",
         "เชียงราย": "Chiang Rai",
         "พิษณุโลก": "Phitsanulok",
     },
-    "🌾 ภาคอีสาน": {
+    "# ภาคอีสาน": {
         "ขอนแก่น": "Khon Kaen",
         "นครราชสีมา": "Nakhon Ratchasima",
     },
-    "🏙️ ภาคกลาง": {
+    "# ภาคกลาง": {
         "กรุงเทพฯ": "Bangkok",
         "นนทบุรี": "Nonthaburi",
     },
-    "🌊 ภาคตะวันออก": {
+    "# ภาคตะวันออก": {
         "ชลบุรี": "Chon Buri",
-        "ระยอง": "Rayong",
     },
-    "🌴 ภาคใต้": {
+    "# ภาคใต้": {
         "ภูเก็ต": "Phuket",
-        "สงขลา": "Songkhla",
     }
 }
 
-
 # =========================
-# WEATHER FETCH
+# API FUNCTIONS
 # =========================
 
 def fetch_weather(city):
@@ -62,17 +58,50 @@ def fetch_weather(city):
         return None
 
 
+def fetch_air_pollution(lat, lon):
+    try:
+        r = requests.get(
+            "https://api.openweathermap.org/data/2.5/air_pollution",
+            params={
+                "lat": lat,
+                "lon": lon,
+                "appid": API_KEY
+            },
+            timeout=10
+        )
+        return r.json()
+    except:
+        return None
+
+
+def fetch_forecast(city):
+    try:
+        r = requests.get(
+            "https://api.openweathermap.org/data/2.5/forecast",
+            params={
+                "q": city,
+                "appid": API_KEY,
+                "units": "metric"
+            },
+            timeout=10
+        )
+        return r.json()
+    except:
+        return None
+
 # =========================
-# EMBED BUILDER
+# EMBED
 # =========================
 
 def build_embed():
     fields = []
 
     for region, cities in REGIONS.items():
+
         block = []
 
         for name, city in cities.items():
+
             data = fetch_weather(city)
 
             if not data or "main" not in data:
@@ -82,7 +111,33 @@ def build_embed():
             feels = round(data["main"]["feels_like"])
             desc = data["weather"][0]["description"]
 
-            # icon
+            lat = data["coord"]["lat"]
+            lon = data["coord"]["lon"]
+
+            # PM2.5 / AQI
+            pm25 = "-"
+            aqi = "-"
+
+            air = fetch_air_pollution(lat, lon)
+
+            if air and "list" in air:
+                pm25 = round(
+                    air["list"][0]["components"]["pm2_5"], 1
+                )
+                aqi = air["list"][0]["main"]["aqi"]
+
+            # Rain Forecast
+            rain = "ไม่มีฝน"
+
+            forecast = fetch_forecast(city)
+
+            if forecast and "list" in forecast:
+                for item in forecast["list"][:3]:
+                    if item.get("pop", 0) >= 0.4:
+                        rain = "มีโอกาสฝน"
+                        break
+
+            # Weather Icon
             if temp >= 35:
                 icon = "🔥"
             elif temp >= 30:
@@ -93,22 +148,24 @@ def build_embed():
             block.append(
                 f"**{name}** {icon}\n"
                 f"🌡️ {temp}°C | 🤔 {feels}°C\n"
-                f"☁️ {desc}"
+                f"☁️ {desc}\n"
+                f"🌫️ PM2.5: {pm25}\n"
+                f"📊 AQI: {aqi}\n"
+                f"🌧️ {rain}"
             )
 
         fields.append({
             "name": region,
-            "value": "\n\n".join(block),
+            "value": "\n\n".join(block) if block else "-",
             "inline": False
         })
 
     return {
-        "title": "🌤️ Live Weather Thailand Dashboard",
-        "description": f"🕒 {datetime.now(thai_tz).strftime('%d/%m/%Y %H:%M')}",
-        "color": 0x3498db,
+        "title": "🌦️ รายงานสภาพอากาศประเทศไทย",
+        "description": f"🕒 อัปเดตล่าสุด {datetime.now(thai_tz).strftime('%d/%m/%Y %H:%M')}",
+        "color": 0x3498DB,
         "fields": fields
     }
-
 
 # =========================
 # DISCORD MESSAGE CONTROL
@@ -128,33 +185,45 @@ def save_msg_id(mid):
 
 
 def send_or_edit(embed, msg_id):
+
     if msg_id:
-        # EDIT (LIVE UPDATE)
+
         requests.patch(
             WEBHOOK_URL + f"/messages/{msg_id}",
             json={"embeds": [embed]}
         )
-        return msg_id
-    else:
-        # FIRST POST
-        r = requests.post(
-            WEBHOOK_URL + "?wait=true",
-            json={"embeds": [embed]}
-        )
-        return r.json()["id"]
 
+        return msg_id
+
+    r = requests.post(
+        WEBHOOK_URL + "?wait=true",
+        json={"embeds": [embed]}
+    )
+
+    return r.json()["id"]
 
 # =========================
 # MAIN LOOP
 # =========================
 
 while True:
-    embed = build_embed()
 
-    msg_id = load_msg_id()
-    new_id = send_or_edit(embed, msg_id)
-    save_msg_id(new_id)
+    try:
 
-    print("updated:", new_id)
+        embed = build_embed()
 
-    time.sleep(300)  # 5 นาที
+        msg_id = load_msg_id()
+
+        new_id = send_or_edit(embed, msg_id)
+
+        save_msg_id(new_id)
+
+        print(
+            f"[{datetime.now(thai_tz)}] Updated: {new_id}"
+        )
+
+    except Exception as e:
+        print("ERROR:", e)
+
+    time.sleep(300)
+```
